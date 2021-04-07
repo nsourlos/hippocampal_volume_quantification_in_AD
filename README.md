@@ -143,14 +143,14 @@ After the above steps, to run the clinical application simulation:
 > python inference_dcm.py new/
 
 ## Validation plan
-* What is the intended use of the product? *
+* What is the intended use of the product?<br/>
 An automatic estimation of the volume of hippocampus from MRI scans of patients that may have AD.
-* How was the training data collected? *
+* How was the training data collected?  
 We are using the "Hippocampus" dataset from the Medical Decathlon competition. This dataset is stored as a collection of NIFTI files, with one file per volume, and one file per corresponding segmentation mask. The original images here are T2 MRI scans of the full brain. As noted, in this dataset we are using cropped volumes where only the region around the hippocampus has been cut out.
-* How did you label your training data? *
+* How did you label your training data?\ 
 Radiologists labeled data as belonging to 1) background, 2) posterior and 3) anterior hippocampus structures
-* How was the training performance of the algorithm measured and how is the real-world performance going to be estimated? *
+* How was the training performance of the algorithm measured and how is the real-world performance going to be estimated?
 Performance is measured mainly based on Dice coefficient. Other measures can also be used (Jaccard coefficient also implemented). Radiologists need to check the results of the AI segmentation to see how accurate they are. To make sure that the algorithm is learning during training, we checked the training and validation loss. 
-* What data will the algorithm perform well in the real world and what data it might not perform well on? *
+* What data will the algorithm perform well in the real world and what data it might not perform well on?
 It is expected that the algorithm will perform well in data that have a similar distribution to those used during training (volume range from ~2300 to ~4400) and not well if data have different distributions (outside of this volume range). It is also important to feed only a cropped image of the are around hippocampus and not whole brain scans.
 
