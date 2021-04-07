@@ -65,7 +65,7 @@ In the project directory called section1 you can find
 
 A 3D visualization of the volume of hippocampus is demonstrated in the figure below
 
-<img src="./readme.img/Slicer.png" width=200/>
+<img src="./readme.img/Slicer.png" width=800/>
 
 ## Section 2: Training a segmentation CNN
 
@@ -84,9 +84,9 @@ The following files are provided:
 2. Test report with Dice scores on test set (can be json file). Your final average Dice with the default model should be around .90
 3. Screenshots from your Tensorboard (or other visualization engine) output, showing Train and Validation loss plots, along with images of the predictions that your model is making at different stages of training
 
-<img src="./readme.img/loss_best.png" width=200/>
+<img src="./readme.img/loss_best.png" width=1000/>
 
-##Section 3: Integrating into a Clinical Network
+## Section 3: Integrating into a Clinical Network
 
 In this final section you will use some of the work you did for Section 2 to create an AI product that can be integrated into a clinical network and provide the auto-computed information on the hippocampal volume to the clinicians. While hospital integrations are typically handled by hospital IT staff, it will help tremendously if you can talk the same language with the people who will operate your model, and will have a feel for how clinical radiological software works. These skills will also help you debug your model in the field.
 
@@ -96,7 +96,7 @@ We have the following software in this setup:
 * Viewer system is represented by OHIF. It is connecting to the Orthanc server using DicomWeb and is serving a web application on port 3000. 
 * AI server is represented by a couple of scripts. section3/deploy_scripts/start_listener.sh brings up a DCMTK's storescp and configures it to just copy everything it receives into a directory that you will need to specify by editing this script, organizing studies as one folder per study. HippoVolume.AI is the AI module that you will create in this section.
 
-inference_dcm.py is the file that you will be working on. It contains code that will analyze the directory of the AI server that contains the routed studies, find the right series to run your algorithm on, will generate report, and push it back to our PACS.
+> ‘inference_dcm.py’ is the file that you will be working on. It contains code that will analyze the directory of the AI server that contains the routed studies, find the right series to run your algorithm on, will generate report, and push it back to our PACS.
 
 Note that in real system you would architect things a bit differently. Probably, AI server would be a separate piece of software that would monitor the output of the listener, and would manage multiple AI modules, deciding which one to run, automatically. In our case, for the sake of simplicity, all code sits in one Python script that you would have to run manually after you simulate an exam via the send_volume.sh script -inference_dcm.py. It combines the functions of processing of the listener output and executing the model, and it does not do any proper error handling :)
 
@@ -107,15 +107,21 @@ The following are provided:
 2. A report.dcm file with a sample report
 3. Validation Plan, which can be found in the description below
 
-##Steps to run simulation
+## Steps to run simulation
 
 Before starting to work on the tasks in this workspace you should launch Orthanc and OHIF and here are the steps:
 1. Open a terminal and enter the following:
-> ‘bash launch_orthanc.sh’ or > ‘./launch_orthanc.sh’. Don't close this terminal
+> ‘bash launch_orthanc.sh’ 
+or 
+> ‘./launch_orthanc.sh’
+Don't close this terminal
 2. Wait for it to complete, with the last line being something like
 W0509 05:38:21.152402 main.cpp:719] Orthanc has started and/or you can verify that Orthanc is working by running echoscu 127.0.0.1 4242 -v in a new terminal.
 3. Open a new terminal and enter the following
-> ‘bash launch_OHIF.sh’ or > ‘./launch_OHIF.sh’. Don't close this terminal
+> ‘bash launch_OHIF.sh’ 
+or 
+> ‘./launch_OHIF.sh’
+Don't close this terminal
 4. Wait for it to complete, with the last line being something like
 @ohif/viewer: ? ?wdm?: Compiled with warnings.
 * OHIF should automatically open in a Chromium Web Browser but if not you can paste localhost:3005 into the address bar of a Chromium Window.
@@ -126,24 +132,25 @@ After the above steps, to run the clinical application simulation:
 1. copy model weights file from section2/<specific_run_directory>/model.path to directory section3/
 
 2. Open new terminal window and start AI server by entering into terminal (the following commands have to be executed from directory deplay_scripts):
-> ‘curl -X POST http://localhost:8042/tools/execute-script --data-binary @route_dicoms.lua -v’
-> ‘storescp 106 -v -aet HIPPOAI -od /home/workspace/src/routed/ --sort-on-study-uid st’
+> curl -X POST http://localhost:8042/tools/execute-script --data-binary @route_dicoms.lua -v
+
+> storescp 106 -v -aet HIPPOAI -od /home/workspace/src/routed/ --sort-on-study-uid st
 
 3. Open new terminal window and simulate an exam by entering command:
-> ‘storescu 127.0.0.1 4242 -v -aec HIPPOAI +r +sd /data/TestVolumes/Study1’
+> storescu 127.0.0.1 4242 -v -aec HIPPOAI +r +sd /data/TestVolumes/Study1
 
 4. run the inference_dcm.py from src directory to create the report report.dcm:
-> ‘python inference_dcm.py new/’
+> python inference_dcm.py new/
 
-##Validation plan
-*What is the intended use of the product?
+## Validation plan
+* What is the intended use of the product?
 An automatic estimation of the volume of hippocampus from MRI scans of patients that may have AD.
-*How was the training data collected?
+* How was the training data collected?
 We are using the "Hippocampus" dataset from the Medical Decathlon competition. This dataset is stored as a collection of NIFTI files, with one file per volume, and one file per corresponding segmentation mask. The original images here are T2 MRI scans of the full brain. As noted, in this dataset we are using cropped volumes where only the region around the hippocampus has been cut out.
-*How did you label your training data?
+* How did you label your training data?
 Radiologists labeled data as belonging to 1) background, 2) posterior and 3) anterior hippocampus structures
-*How was the training performance of the algorithm measured and how is the real-world performance going to be estimated?
+* How was the training performance of the algorithm measured and how is the real-world performance going to be estimated?
 Performance is measured mainly based on Dice coefficient. Other measures can also be used (Jaccard coefficient also implemented). Radiologists need to check the results of the AI segmentation to see how accurate they are. To make sure that the algorithm is learning during training, we checked the training and validation loss. 
-*What data will the algorithm perform well in the real world and what data it might not perform well on?
+* What data will the algorithm perform well in the real world and what data it might not perform well on?
 It is expected that the algorithm will perform well in data that have a similar distribution to those used during training (volume range from ~2300 to ~4400) and not well if data have different distributions (outside of this volume range). It is also important to feed only a cropped image of the are around hippocampus and not whole brain scans.
 
